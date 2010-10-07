@@ -1,0 +1,27 @@
+Text base task manage method.
+
+Line start without ';' or '#' means a task
+Line start with ';' and follow a task line means this is a comment for task
+Line start with '#' means a finished task
+
+This is the three basic element in task manage method.
+below is an example:
+
+This is a task
+; following is comments for
+; this task
+
+# This is a finished task
+; comments for this task
+
+In console, type:
+
+$ task st
+
+then the task program will process your task list then open a text editor let you edit your
+task file. In the process, program will create a new file in your task file store directory,
+read old file filter all finished task and write all unfinish task into the new file, then
+open a text editor let you edit new file.
+
+In this program, there has 2 variable you should config it:
+EDITOR and TASK_STORE_DIR

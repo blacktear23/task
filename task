@@ -1,0 +1,152 @@
+#! /usr/bin/python
+# -*- coding: utf-8 -*- 
+import time
+import glob
+import sys
+import os
+import codecs
+
+ENCODING = "UTF-8"
+
+def cur_file_dir():
+    return TASK_STORE_DIR
+
+def create_task_file(filename):
+	if is_file_already_have(filename): return False
+	fp = open(filename, "w+")
+	fp.write(u"### %s ###\n" % os.path.basename(filename).encode(ENCODING))
+	fp.close()
+	return True
+
+def get_today_file_name():
+	lt = time.localtime()
+	fname = "%s/%d-%02d-%02d.txt" % (cur_file_dir(), lt.tm_year, lt.tm_mon, lt.tm_mday)
+	return fname
+	
+def get_txt_files():
+	return glob.glob(cur_file_dir() + "/*.txt")
+	
+def is_file_already_have(name):
+	return get_txt_files().__contains__(name)
+	
+def edit_task_file(fname, editor):
+	os.execlp(editor, editor, fname)
+
+def load_unfinish_task(fname, stack):
+	start = True
+	ftask = False
+	for line in open(fname):
+		line = line.strip()
+		if len(line) == 0 : continue
+		if line.startswith("#"):
+			ftask = True
+			continue
+		if line.startswith(";"):
+			if not ftask:
+				stack.append(line)
+			continue
+		if not line.startswith("#"):
+			if start:
+				stack.append(u"### %s unfinished tasks:" % os.path.basename(fname).encode(ENCODING)[0:-4])
+				start = False
+			stack.append(line)
+			ftask = False
+	if not start:
+		stack.append(u"### -------- ###")
+
+def get_unfinish_task_list(include_today = False):
+	txtfs = get_txt_files()
+	if not include_today:
+		txtfs.remove(get_today_file_name())
+	txtfs.reverse()
+	unfinish_tasks = []
+	if not len(txtfs) == 0:
+		load_unfinish_task(txtfs[0], unfinish_tasks)
+	return unfinish_tasks
+
+def write_task_list_append(fname, task_list):
+	fp = open(fname, "a")
+	for task in task_list:
+		if task.startswith(";") or task.startswith("#"):
+			if task.startswith("### -"):
+				tstr = "\n\n%s" % task
+			else:
+				tstr = "\n%s" % task
+		else:
+			tstr = "\n\n%s" % task
+		if tstr.__class__.__name__ == 'unicode':
+			tstr = tstr.encode(ENCODING)
+		fp.write(tstr)
+	fp.close()
+
+def get_version():
+	return "v1.0.1 beta"
+	
+def show_unfinish_list(list):
+	for task in list:
+		if task.startswith(";"):
+			print "  %s" % task
+		else:
+			print "\n%s" % task
+		
+def help():
+	helpstr = u'欢迎使用TaskList ' + get_version()
+	helpstr += u'''
+使用方法：
+  python task.py [参数]
+	
+参数：
+  1 opentoday (ot) 创建并用编辑器打开当天的任务文本文件。文件名为当天日
+                   期，初始化的内容包括一行文件名.(不推荐使用)
+  2 shiptoday (st) 创建当天的任务文件，然后从以前的任务文件中提取未完成
+                   任务写入文件末尾。最后用编辑器打开该文件。
+  3 showunfinish (suf) 显示所有未完成的任务。
+  4 help           显示帮助。
+
+关于编辑器：
+  在python源代码中寻找"EDITOR"这个变量，然后修改成你自己喜欢的文本编辑器
+  的运行文件即可。
+
+关于任务文件：
+  每个任务的描述占一行。
+  完成的任务应该在该行的前面用"#"字符来标注。
+  针对每个任务可以配以N行的注释，这些注释要使用";"开头。
+	
+例子：
+  python task.py st
+  python task.py suf'''
+	return helpstr
+	
+EDITOR = "mvim"
+TASK_STORE_DIR = "/Users/mac/Documents/tasks"
+#EDITOR = "gvim.exe"
+
+
+commands = sys.argv
+if len(commands) == 1:
+	print help()
+	exit()
+	
+if len(commands) > 2:
+	print u"错误 参数应该有1个."
+	print help()
+	exit()
+
+if commands[1] == 'opentoday' or commands[1] == 'ot' :
+	fname = get_today_file_name()
+	create_task_file(fname)
+	edit_task_file(fname, EDITOR)
+
+if commands[1] == 'shiptoday' or commands[1] == 'st' :
+	fname = get_today_file_name()
+	if create_task_file(fname):
+		tlist = get_unfinish_task_list()
+		write_task_list_append(fname, tlist)
+	edit_task_file(fname, EDITOR)
+	
+if commands[1] == 'showunfinish' or commands[1] == 'suf' :
+	unfinish_tasks = get_unfinish_task_list(True)
+	show_unfinish_list(unfinish_tasks)
+	
+if commands[1] == "help":
+	print help()
