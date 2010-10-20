@@ -105,13 +105,19 @@ def show_unfinish_list(list):
 
 def install():
 	install_path = "/usr/bin/task"
+	src_file = __file__
+	if install_path == src_file:
+		print 'Already installed'
+		return
 	ifp = open(__file__, "r")
 	ofp = open(install_path, "w+")
+	print 'Copying file...'
 	for line in ifp:
 		ofp.write(line)
 	ifp.close()
 	ofp.close()
 	os.popen("chmod 755 %s" % install_path)
+	print 'Install finish.'
 
 def help():
 	helpstr = u'欢迎使用TaskList ' + get_version()
@@ -161,19 +167,23 @@ if commands[1] == 'opentoday' or commands[1] == 'ot' :
 	create_task_file(fname)
 	edit_task_file(fname, get_editor())
 
-if commands[1] == 'shiptoday' or commands[1] == 'st' :
+elif commands[1] == 'shiptoday' or commands[1] == 'st' :
 	fname = get_today_file_name()
 	if create_task_file(fname):
 		tlist = get_unfinish_task_list()
 		write_task_list_append(fname, tlist)
 	edit_task_file(fname, get_editor())
 
-if commands[1] == 'showunfinish' or commands[1] == 'suf' :
+elif commands[1] == 'showunfinish' or commands[1] == 'suf' :
 	unfinish_tasks = get_unfinish_task_list(True)
 	show_unfinish_list(unfinish_tasks)
 
-if commands[1] == "help":
+elif commands[1] == "install":
+		install()
+
+elif commands[1] == "help":
 	print help()
 
-if commands[1] == "install":
-	install()
+else:
+	print "未知命令: %s" % commands[1]
+	print help()

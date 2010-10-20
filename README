@@ -26,4 +26,14 @@ open a text editor let you edit new file.
 You can define 2 environment variable:
   TASK_EDITOR	The editor for edit task file
   TASK_DIR		The path to save task file
-If you define this two environment variable program will use those, if not, there has 2 predefined variable in script file: DEFAULT_TASK_EDITOR and DEFAULT_TASK_DIR. You can also edit this 2 variable to define editor and path. 
+If you define this two environment variable program will use those, if not, there has 2 predefined variable in script file: DEFAULT_TASK_EDITOR and DEFAULT_TASK_DIR. You can also edit this 2 variable to define editor and path.
+
+Install task:
+
+$ sudo ./task install
+Copying file...
+Install finish.
+
+This program will installed into /usr/bin Then you can use this program by typing:
+
+$ task st 
