@@ -23,5 +23,7 @@ task file. In the process, program will create a new file in your task file stor
 read old file filter all finished task and write all unfinish task into the new file, then
 open a text editor let you edit new file.
 
-In this program, there has 2 variable you should config it:
-EDITOR and TASK_STORE_DIR
+You can define 2 environment variable:
+  TASK_EDITOR	The editor for edit task file
+  TASK_DIR		The path to save task file
+If you define this two environment variable program will use those, if not, there has 2 predefined variable in script file: DEFAULT_TASK_EDITOR and DEFAULT_TASK_DIR. You can also edit this 2 variable to define editor and path. 

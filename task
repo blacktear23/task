@@ -7,9 +7,23 @@ import os
 import codecs
 
 ENCODING = "UTF-8"
+DEFAULT_EDITOR = "mvim"
+DEFAULT_TASK_DIR = "/Users/mac/Documents/tasks"
+
+def get_editor():
+	e = os.environ
+	if e.has_key('TASK_EDITOR'):
+		return e['TASK_EDITOR']
+	else:
+		return DEFAULT_EDITOR
+	
 
 def cur_file_dir():
-    return TASK_STORE_DIR
+	e = os.environ
+	if e.has_key('TASK_DIR'):
+		return e['TASK_DIR']
+	else:
+		return DEFAULT_TASK_DIR
 
 def create_task_file(filename):
 	if is_file_already_have(filename): return False
@@ -80,7 +94,7 @@ def write_task_list_append(fname, task_list):
 	fp.close()
 
 def get_version():
-	return "v1.0.1 beta"
+	return "v1.0.2 beta"
 	
 def show_unfinish_list(list):
 	for task in list:
@@ -88,7 +102,17 @@ def show_unfinish_list(list):
 			print "  %s" % task
 		else:
 			print "\n%s" % task
-		
+
+def install():
+	install_path = "/usr/bin/task"
+	ifp = open(__file__, "r")
+	ofp = open(install_path, "w+")
+	for line in ifp:
+		ofp.write(line)
+	ifp.close()
+	ofp.close()
+	os.popen("chmod 755 %s" % install_path)
+
 def help():
 	helpstr = u'欢迎使用TaskList ' + get_version()
 	helpstr += u'''
@@ -102,11 +126,16 @@ def help():
                    任务写入文件末尾。最后用编辑器打开该文件。
   3 showunfinish (suf) 显示所有未完成的任务。
   4 help           显示帮助。
+  5 install        安装task程序
 
-关于编辑器：
-  在python源代码中寻找"EDITOR"这个变量，然后修改成你自己喜欢的文本编辑器
-  的运行文件即可。
-
+关于环境变量：
+  程序运行时会检查两个环境变量：
+	TASK_EDITOR  编辑器命令
+	TASK_DIR     任务文件所在路径
+  设置好两个环境变量之后程序会根据变量来调整使用的编辑器和任务文件保存地点。
+  如果没有设置这两个参数，程序会自动选择默认设置，这个默认设置已经写入脚本中
+  ，用户可以自行修改。
+  
 关于任务文件：
   每个任务的描述占一行。
   完成的任务应该在该行的前面用"#"字符来标注。
@@ -116,11 +145,6 @@ def help():
   python task.py st
   python task.py suf'''
 	return helpstr
-	
-EDITOR = "mvim"
-TASK_STORE_DIR = "/Users/mac/Documents/tasks"
-#EDITOR = "gvim.exe"
-
 
 commands = sys.argv
 if len(commands) == 1:
@@ -135,18 +159,21 @@ if len(commands) > 2:
 if commands[1] == 'opentoday' or commands[1] == 'ot' :
 	fname = get_today_file_name()
 	create_task_file(fname)
-	edit_task_file(fname, EDITOR)
+	edit_task_file(fname, get_editor())
 
 if commands[1] == 'shiptoday' or commands[1] == 'st' :
 	fname = get_today_file_name()
 	if create_task_file(fname):
 		tlist = get_unfinish_task_list()
 		write_task_list_append(fname, tlist)
-	edit_task_file(fname, EDITOR)
-	
+	edit_task_file(fname, get_editor())
+
 if commands[1] == 'showunfinish' or commands[1] == 'suf' :
 	unfinish_tasks = get_unfinish_task_list(True)
 	show_unfinish_list(unfinish_tasks)
-	
+
 if commands[1] == "help":
 	print help()
+
+if commands[1] == "install":
+	install()
